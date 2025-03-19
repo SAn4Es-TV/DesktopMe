@@ -45,6 +45,7 @@ namespace DesktopMe {
         public MainWindow() {
             InitializeComponent();
             if (File.Exists("file_name.ini")) {
+
                 iniFile = new IniFile("file_name.ini");
                 Width = iniFile.ReadInt("Width", "Size");
                 Height = iniFile.ReadInt("Height", "Size");
@@ -55,6 +56,9 @@ namespace DesktopMe {
                 character = iniFile.ReadString("Character", "Other");
                 sensivity = iniFile.ReadInt("Sensivity", "Other");
                 changeChar();
+            }
+            else {
+                iniFile = new IniFile("file_name.ini");
             }
 
             DirectoryInfo directoryInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "/Characters/");
@@ -244,7 +248,11 @@ namespace DesktopMe {
             }
             else {
                 this.Dispatcher.Invoke(() => {
-                    mouth.Source = new BitmapImage(new Uri(mouthImg1));
+                    try {
+                        mouth.Source = new BitmapImage(new Uri(mouthImg1));
+                    }
+                    catch (Exception ex) {
+                    }
 
                 });
             }
