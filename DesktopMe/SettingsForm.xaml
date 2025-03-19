@@ -7,7 +7,7 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
         ResizeMode="NoResize"
-        Title="Настройки" Height="150" Width="245">
+        Title="Настройки" Height="200" Width="245">
     <Grid>
         <hc:NumericUpDown x:Name="height" ValueChanged="NumericUpDown_ValueChanged" 
             Margin="10,10,0,0"
@@ -17,6 +17,9 @@
             Margin="120,10,0,0"
                   hc:InfoElement.Title="Ширина" Value="300"
                   Style="{StaticResource NumericUpDownExtend}" Width="100" Height="50" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock x:Name="sensyvText" Text="Чувствительность: 1000" Margin="17,65,0,0" Height="25" VerticalAlignment="Top"/>
+        <Slider x:Name="sensivity" VerticalAlignment="Center" Margin="10,20,10,0" Value="1000" Maximum="3000" ValueChanged="sensivity_ValueChanged"/>
+
         <Button x:Name="Save" Click="Save_Click" Content="Сохранить" Margin="0,0,80,10" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
         <Button x:Name="Cancel" Click="Cancel_Click" Content="Отмена" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
     </Grid>

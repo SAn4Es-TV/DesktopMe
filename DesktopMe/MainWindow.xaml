@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         MouseDown="Window_MouseDown"
         ResizeMode="NoResize"
+        Closing="Window_Closing"
         Title="MainWindow" ShowInTaskbar="False" Background="Transparent" Topmost="True" Height="300" Width="300" AllowsTransparency="True" WindowStyle="None">
     <Grid>
         <Image IsEnabled="False" IsHitTestVisible="False"  x:Name="main"/>
@@ -33,6 +34,9 @@
     <Window.ContextMenu>
         <ContextMenu>
             <MenuItem x:Name="settingsMenu" Header="Настройки" Click="settingsMenu_Click"/>
+            <MenuItem x:Name="charOption" Header="Персонаж">
+                
+            </MenuItem>
             <Separator/>
             <MenuItem x:Name="quitMenu" Header="Выйти" Click="quitMenu_Click"/>
         </ContextMenu>

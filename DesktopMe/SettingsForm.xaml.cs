@@ -22,13 +22,19 @@ namespace DesktopMe {
         private readonly MainWindow mainWindow;
         public SettingsForm(MainWindow mainWindow) {
             this.mainWindow = mainWindow;
+            IniFile iniFile = new IniFile("file_name.ini");
             InitializeComponent();
+            width.Value = iniFile.ReadInt("Width", "Size");
+            height.Value = iniFile.ReadInt("Height", "Size");
+            sensivity.Value = iniFile.ReadInt("Sensivity", "Other");
+            sensyvText.Text = "Чувствительность: " + iniFile.ReadInt("Sensivity", "Other");
         }
 
         private void Save_Click(object sender, RoutedEventArgs e) {
             IniFile iniFile = new IniFile("file_name.ini");
             iniFile.Write("Width", width.Value.ToString(), "Size");
             iniFile.Write("Height", height.Value.ToString(), "Size");
+            iniFile.Write("Sensivity", ((int)sensivity.Value).ToString(), "Other");
 
 
             this.DialogResult = true;
@@ -47,6 +53,11 @@ namespace DesktopMe {
         private void NumericUpDown_ValueChanged_1(object sender, HandyControl.Data.FunctionEventArgs<double> e) {
             mainWindow.Width = (sender as NumericUpDown).Value;
 
+        }
+
+        private void sensivity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            mainWindow.sensivity = (int)(sender as Slider).Value;
+            sensyvText.Text = "Чувствительность: " + (int)sensivity.Value;
         }
     }
 }

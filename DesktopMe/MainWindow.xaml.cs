@@ -8,9 +8,11 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using Windows.ApplicationModel.Email;
 using Windows.Media.Control;
 
 namespace DesktopMe {
@@ -18,28 +20,56 @@ namespace DesktopMe {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-        public string mainImg = AppDomain.CurrentDomain.BaseDirectory + "/images/body.png";
-        public string main_Img = AppDomain.CurrentDomain.BaseDirectory + "/images/body_.png";
-        public string eyeImg = AppDomain.CurrentDomain.BaseDirectory + "/images/eye1.png";
-        public string eyeImg1 = AppDomain.CurrentDomain.BaseDirectory + "/images/eye2.png";
-        public string mouthImg = AppDomain.CurrentDomain.BaseDirectory + "/images/mouth1.png";
-        public string mouthImg1 = AppDomain.CurrentDomain.BaseDirectory + "/images/mouth.png";
+        public static string character = "Just Guy";
 
-        public string musicImg1 = AppDomain.CurrentDomain.BaseDirectory + "/images/effects/music1.png";
-        public string musicImg2 = AppDomain.CurrentDomain.BaseDirectory + "/images/effects/music2.png";
+        static string mainFolder = AppDomain.CurrentDomain.BaseDirectory + "/Characters/" + character;
+        public string mainImg = mainFolder + "/body.png";
+        public string main_Img = mainFolder + "/body_.png";
+        public string eyeImg = mainFolder + "/eye1.png";
+        public string eyeImg1 = mainFolder + "/eye2.png";
+        public string mouthImg = mainFolder + "/mouth1.png";
+        public string mouthImg1 = mainFolder + "/mouth.png";
+
+        public string musicImg1 = mainFolder + "/effects/music1.png";
+        public string musicImg2 = mainFolder + "/effects/music2.png";
 
 
-        public string tailFolder = AppDomain.CurrentDomain.BaseDirectory + "/images/tail/";
+        public string animFolder = mainFolder + "/anim/";
         bool inDrag = false;
         Point anchorPoint;
 
         bool isPlayed = false;
+        IniFile iniFile;
+
+        public int sensivity = 1000;
         public MainWindow() {
             InitializeComponent();
-            IniFile iniFile = new IniFile("file_name.ini");
-            Width = iniFile.ReadInt("Width", "Size");
-            Height = iniFile.ReadInt("Height", "Size");
+            if (File.Exists("file_name.ini")) {
+                iniFile = new IniFile("file_name.ini");
+                Width = iniFile.ReadInt("Width", "Size");
+                Height = iniFile.ReadInt("Height", "Size");
 
+                Left = iniFile.ReadInt("X", "Position");
+                Top = iniFile.ReadInt("Y", "Position");
+
+                character = iniFile.ReadString("Character", "Other");
+                sensivity = iniFile.ReadInt("Sensivity", "Other");
+                changeChar();
+            }
+
+            DirectoryInfo directoryInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "/Characters/");
+            foreach (DirectoryInfo fi in directoryInfo.GetDirectories()) {
+                MenuItem menuItem = new MenuItem();
+                menuItem.Header = fi.Name;
+                menuItem.Click += (sender, e) => {
+                    iniFile.Write("Character", fi.Name, "Other");
+                    character = fi.Name;
+                    changeChar();
+                    Debug.WriteLine(mainFolder);
+                };
+                charOption.Items.Add(menuItem);
+
+            }
 
             main.Source = new BitmapImage(new Uri(mainImg));
             eye.Source = new BitmapImage(new Uri(eyeImg));
@@ -103,10 +133,11 @@ namespace DesktopMe {
                 while (true) {
                     if (DateTime.Now >= nextBlink) {
                         // Check if currently speaking, only blink if not in dialog
-                        DirectoryInfo directoryInfo = new DirectoryInfo(tailFolder);
+                        DirectoryInfo directoryInfo = new DirectoryInfo(animFolder);
                         for (int i = 1; i <= directoryInfo.GetFiles().Length; i++) {
                             this.Dispatcher.Invoke(() => {
-                                tail.Source = new BitmapImage(new Uri(tailFolder + "/" + i + ".png"));
+                                if(File.Exists(animFolder + "/" + i + ".png"))
+                                    tail.Source = new BitmapImage(new Uri(animFolder + "/" + i + ".png"));
                             });
                             Task.Delay(interval).Wait();
                         }
@@ -127,7 +158,7 @@ namespace DesktopMe {
                             this.Dispatcher.Invoke(() => {
                                 music.Source = new BitmapImage(new Uri(musicImg1));
                             });
-                            Task.Delay(500).Wait();
+                            Task.Delay(1000).Wait();
                             this.Dispatcher.Invoke(() => {
                                 music.Source = new BitmapImage(new Uri(musicImg2));
                             });
@@ -137,7 +168,7 @@ namespace DesktopMe {
                                 music.Source = null;
                             });
                         }
-                        nextBlink = DateTime.Now + TimeSpan.FromSeconds(1);
+                        nextBlink = DateTime.Now + TimeSpan.FromMilliseconds(1000);
                     }
                 }
             });
@@ -147,7 +178,7 @@ namespace DesktopMe {
                     try {
                         var mediaTramsportManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
                         var mediaSession = mediaTramsportManager.GetCurrentSession();
-                        if(mediaSession != null) {
+                        if (mediaSession != null) {
                             GlobalSystemMediaTransportControlsSessionPlaybackInfo playbackInfo = mediaSession.GetPlaybackInfo();
 
                             if (playbackInfo.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
@@ -171,6 +202,30 @@ namespace DesktopMe {
             });
         }
 
+        void changeChar() {
+            mainFolder = AppDomain.CurrentDomain.BaseDirectory + "/Characters/" + character;
+            mainImg = mainFolder + "/body.png";
+            main_Img = mainFolder + "/body_.png";
+            eyeImg = mainFolder + "/eye1.png";
+            eyeImg1 = mainFolder + "/eye2.png";
+            mouthImg = mainFolder + "/mouth1.png";
+            mouthImg1 = mainFolder + "/mouth.png";
+
+            musicImg1 = mainFolder + "/effects/music1.png";
+            musicImg2 = mainFolder + "/effects/music2.png";
+
+            animFolder = mainFolder + "/anim/";
+
+            main.Source = new BitmapImage(new Uri(mainImg));
+            eye.Source = new BitmapImage(new Uri(eyeImg));
+            mouth.Source = new BitmapImage(new Uri(mouthImg));
+
+            if (File.Exists(animFolder + "/1.png"))
+                tail.Source = new BitmapImage(new Uri(animFolder + "/1.png"));
+            else
+                tail.Source = null;
+
+        }
 
         private void ShowPeakMono(object sender, NAudio.Wave.WaveInEventArgs args) {
             float maxValue = 32767;
@@ -181,7 +236,7 @@ namespace DesktopMe {
                 peakValue = Math.Max(peakValue, value);
             }
 
-            if (peakValue > 1000) {
+            if (peakValue > sensivity) {
                 this.Dispatcher.Invoke(() => {
                     mouth.Source = new BitmapImage(new Uri(mouthImg));
 
@@ -200,8 +255,8 @@ namespace DesktopMe {
         private void Window_MouseDown(object sender, MouseButtonEventArgs e) {
 
             if (e.ChangedButton == MouseButton.Left) {
-            
-            this.DragMove();
+
+                this.DragMove();
                 /*anchorPoint = PointToScreen(e.GetPosition(this));
                 inDrag = true;
                 CaptureMouse();
@@ -214,8 +269,8 @@ namespace DesktopMe {
                 Point currentPoint = PointToScreen(e.GetPosition(this));
                 this.Left = this.Left + currentPoint.X - anchorPoint.X;
                 /*this.Top = this.Top + currentPoint.Y - anchorPoint.Y*/
-            ; // this is not changing in your case
-            anchorPoint = currentPoint;
+                ; // this is not changing in your case
+                anchorPoint = currentPoint;
             }
         }
 
@@ -245,6 +300,12 @@ namespace DesktopMe {
 
         private void quitMenu_Click(object sender, RoutedEventArgs e) {
             this.Close();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+            iniFile.Write("X", Left.ToString(), "Position");
+            iniFile.Write("Y", Top.ToString(), "Position");
+
         }
     }
 }
