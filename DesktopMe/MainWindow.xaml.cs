@@ -42,8 +42,13 @@ namespace DesktopMe {
         IniFile iniFile;
 
         public int sensivity = 1000;
-        public MainWindow() {
-            InitializeComponent();
+
+        public int eyeClosedTime = 250;
+        public int eyeBlinkMin = 5;
+        public int eyeBlinkMax = 15;
+
+        void readData() {
+
             if (File.Exists("file_name.ini")) {
 
                 iniFile = new IniFile("file_name.ini");
@@ -55,12 +60,19 @@ namespace DesktopMe {
 
                 character = iniFile.ReadString("Character", "Other");
                 sensivity = iniFile.ReadInt("Sensivity", "Other");
-                changeChar();
+
+                eyeBlinkMin = iniFile.ReadInt("BlinkMin", "Other");
+                eyeBlinkMax = iniFile.ReadInt("BlinkMax", "Other");
+                eyeClosedTime = iniFile.ReadInt("BlinkTime", "Other");
             }
             else {
                 iniFile = new IniFile("file_name.ini");
             }
 
+        }
+        public MainWindow() {
+            InitializeComponent();
+            readData();
             DirectoryInfo directoryInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "/Characters/");
             foreach (DirectoryInfo fi in directoryInfo.GetDirectories()) {
                 MenuItem menuItem = new MenuItem();
@@ -75,8 +87,15 @@ namespace DesktopMe {
 
             }
 
-            main.Source = new BitmapImage(new Uri(mainImg));
-            eye.Source = new BitmapImage(new Uri(eyeImg));
+            mainFolder = AppDomain.CurrentDomain.BaseDirectory + "/Characters/" + character;
+            if (Directory.Exists(mainFolder))
+                changeChar();
+            else {
+                List<DirectoryInfo> list = directoryInfo.GetDirectories().ToList();
+                character = list[new Random().Next(list.Count)].Name;
+                changeChar();
+            }
+            
 
             var waveIn = new NAudio.Wave.WaveInEvent {
                 DeviceNumber = 0, // customize this to select your microphone device
@@ -89,7 +108,7 @@ namespace DesktopMe {
             Random random = new Random();
 
             Task.Run(() => {
-                var nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(5, 15));
+                var nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(eyeBlinkMin, eyeBlinkMax));
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized);
 
                 while (true) {
@@ -99,15 +118,15 @@ namespace DesktopMe {
                         this.Dispatcher.Invoke(() => {
                             eye.Source = new BitmapImage(new Uri(eyeImg1));
                         });
-                        Task.Delay(250).Wait();
+                        Task.Delay(eyeClosedTime).Wait();
                         this.Dispatcher.Invoke(() => {
                             eye.Source = new BitmapImage(new Uri(eyeImg));
                         });
 
-                        nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(7, 15));
+                        nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(eyeBlinkMin, eyeBlinkMax));
                     }
                 }
-            });
+            }); // Blink
             Task.Run(() => {
                 var nextBlink = DateTime.Now + TimeSpan.FromSeconds(0.5);
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized);
@@ -127,7 +146,7 @@ namespace DesktopMe {
                         nextBlink = DateTime.Now + TimeSpan.FromSeconds(0.5);
                     }
                 }
-            });
+            }); // Body
             Task.Run(() => {
                 int rare = 5;
                 int interval = 150;
@@ -149,7 +168,7 @@ namespace DesktopMe {
                         nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(rare, rare + 20));
                     }
                 }
-            });
+            }); // Animation
             Task.Run(() => {
                 var nextBlink = DateTime.Now + TimeSpan.FromSeconds(1);
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized);
@@ -175,7 +194,7 @@ namespace DesktopMe {
                         nextBlink = DateTime.Now + TimeSpan.FromMilliseconds(1000);
                     }
                 }
-            });
+            }); // Music Effect
             Task.Run(async () => {
 
                 while (true) {
@@ -203,11 +222,9 @@ namespace DesktopMe {
                     }
                     Task.Delay(250).Wait();
                 }
-            });
+            }); // Detect Music
         }
-
         void changeChar() {
-            mainFolder = AppDomain.CurrentDomain.BaseDirectory + "/Characters/" + character;
             mainImg = mainFolder + "/body.png";
             main_Img = mainFolder + "/body_.png";
             eyeImg = mainFolder + "/eye1.png";
@@ -230,7 +247,6 @@ namespace DesktopMe {
                 tail.Source = null;
 
         }
-
         private void ShowPeakMono(object sender, NAudio.Wave.WaveInEventArgs args) {
             float maxValue = 32767;
             int peakValue = 0;
@@ -257,9 +273,6 @@ namespace DesktopMe {
                 });
             }
         }
-
-
-
         private void Window_MouseDown(object sender, MouseButtonEventArgs e) {
 
             if (e.ChangedButton == MouseButton.Left) {
@@ -271,7 +284,6 @@ namespace DesktopMe {
                 e.Handled = true;*/
             }
         }
-
         private void Window_MouseMove(object sender, MouseEventArgs e) {
             if (inDrag) {
                 Point currentPoint = PointToScreen(e.GetPosition(this));
@@ -281,7 +293,6 @@ namespace DesktopMe {
                 anchorPoint = currentPoint;
             }
         }
-
         private void Window_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
 
             if (inDrag) {
@@ -290,7 +301,6 @@ namespace DesktopMe {
                 e.Handled = true;
             }
         }
-
         private void Window_LostMouseCapture(object sender, MouseEventArgs e) {
 
             if (inDrag) {
@@ -299,17 +309,17 @@ namespace DesktopMe {
                 e.Handled = true;
             }
         }
-
         private void settingsMenu_Click(object sender, RoutedEventArgs e) {
             SettingsForm settingsForm = new SettingsForm(this);
 
-            settingsForm.ShowDialog();
-        }
+            if (settingsForm.ShowDialog() == true) {
 
+                readData();
+            }
+        }
         private void quitMenu_Click(object sender, RoutedEventArgs e) {
             this.Close();
         }
-
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             iniFile.Write("X", Left.ToString(), "Position");
             iniFile.Write("Y", Top.ToString(), "Position");

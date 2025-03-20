@@ -36,6 +36,10 @@ namespace DesktopMe {
             iniFile.Write("Height", height.Value.ToString(), "Size");
             iniFile.Write("Sensivity", ((int)sensivity.Value).ToString(), "Other");
 
+            iniFile.Write("BlinkMin", ((int)blinkTimeMin.Value).ToString(), "Other");
+            iniFile.Write("BlinkMax", ((int)blinkTimeMax.Value).ToString(), "Other");
+            iniFile.Write("BlinkTime", ((int)blinkTime.Value).ToString(), "Other");
+
 
             this.DialogResult = true;
             this.Close();
@@ -58,6 +62,10 @@ namespace DesktopMe {
         private void sensivity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             mainWindow.sensivity = (int)(sender as Slider).Value;
             sensyvText.Text = "Чувствительность: " + (int)sensivity.Value;
+        }
+
+        private void blinkTime_ValueChanged(object sender, HandyControl.Data.FunctionEventArgs<double> e) {
+            mainWindow.eyeClosedTime = (int)(sender as NumericUpDown).Value;
         }
     }
 }
