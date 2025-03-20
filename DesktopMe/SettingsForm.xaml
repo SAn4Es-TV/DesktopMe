@@ -22,10 +22,10 @@
             <Slider x:Name="sensivity" VerticalAlignment="Top" Margin="0,20,0,0" Value="1000" Maximum="3000" ValueChanged="sensivity_ValueChanged"/>
         </Grid>
         <Grid  Margin="10,105,0,0" Height="110" VerticalAlignment="Top">
-            <hc:NumericUpDown x:Name="blinkTimeMin" ValueChanged="NumericUpDown_ValueChanged_1"
+            <hc:NumericUpDown x:Name="blinkTimeMin"
 hc:InfoElement.Title="Частота моргания (мин)" Value="5" Minimum="0"
 Style="{StaticResource NumericUpDownExtend}" Width="150" Height="50" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <hc:NumericUpDown x:Name="blinkTimeMax" ValueChanged="NumericUpDown_ValueChanged_1"
+            <hc:NumericUpDown x:Name="blinkTimeMax"
 hc:InfoElement.Title="Частота моргания (макс)" Value="15" Margin="160,0,0,0" Minimum="0"
 Style="{StaticResource NumericUpDownExtend}" Width="150" Height="50" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <hc:NumericUpDown x:Name="blinkTime" ValueChanged="blinkTime_ValueChanged"

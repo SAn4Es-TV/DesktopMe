@@ -28,6 +28,13 @@ namespace DesktopMe {
             height.Value = iniFile.ReadInt("Height", "Size");
             sensivity.Value = iniFile.ReadInt("Sensivity", "Other");
             sensyvText.Text = "Чувствительность: " + iniFile.ReadInt("Sensivity", "Other");
+
+            blinkTimeMin.Value = iniFile.ReadInt("BlinkMin", "Other");
+            blinkTimeMax.Value = iniFile.ReadInt("BlinkMax", "Other");
+            blinkTime.Value = iniFile.ReadInt("BlinkTime", "Other");
+
+            mainWindow.Height = iniFile.ReadInt("Height", "Size");
+            mainWindow.Width = iniFile.ReadInt("Width", "Size");
         }
 
         private void Save_Click(object sender, RoutedEventArgs e) {
