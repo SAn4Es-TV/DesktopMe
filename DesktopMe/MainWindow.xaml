@@ -10,6 +10,8 @@
         ResizeMode="NoResize"
         Closing="Window_Closing"
         Deactivated="Window_Deactivated"
+        AllowDrop="True" Drop="Grid_Drop"
+        Loaded="Window_Loaded"
         Title="MainWindow" ShowInTaskbar="False" Background="Transparent" Topmost="True" Height="300" Width="300" AllowsTransparency="True" WindowStyle="None">
     <Grid>
         <Image IsEnabled="False" IsHitTestVisible="False"  x:Name="main"/>

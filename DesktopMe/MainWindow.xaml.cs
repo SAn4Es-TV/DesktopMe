@@ -1,5 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,7 +22,25 @@ namespace DesktopMe {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
+    public class Accessorie {
+        public string Name { get; set; }
+        public int Size{ get; set; }
+        public Point Position { get; set; }
+        public string Path { get; set; }
+
+        public Window Window { get; set; }
+    }
+
     public partial class MainWindow : Window {
+        #region Сбор мусора
+        [DllImport("kernel32.dll")]
+        static extern bool SetProcessWorkingSetSize(IntPtr hProcess, int dwMinimumWorkingSetSize, int dwMaximumWorkingSetSize);
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+        public static extern bool DeleteObject(object hObject);
+        #endregion
+
+
         public static string character = "Just Guy";
 
         static string mainFolder = AppDomain.CurrentDomain.BaseDirectory + "/Characters/" + character;
@@ -49,6 +70,13 @@ namespace DesktopMe {
 
         bool pinned = false;
 
+        List<Accessorie> accessories = new List<Accessorie>();
+
+        List<BitmapImage> MainBitmapImages = new List<BitmapImage>();
+        List<BitmapImage> AnimBitmapImages = new List<BitmapImage>();
+        List<BitmapImage> EyeBitmapImages = new List<BitmapImage>();
+        List<BitmapImage> MusicBitmapImages = new List<BitmapImage>();
+        List<BitmapImage> MouthBitmapImages = new List<BitmapImage>();
         void readData() {
 
             if (File.Exists("file_name.ini")) {
@@ -128,11 +156,11 @@ namespace DesktopMe {
                         // Check if currently speaking, only blink if not in dialog
 
                         this.Dispatcher.Invoke(() => {
-                            eye.Source = new BitmapImage(new Uri(eyeImg1));
+                            eye.Source = EyeBitmapImages[1];
                         });
                         Task.Delay(eyeClosedTime).Wait();
                         this.Dispatcher.Invoke(() => {
-                            eye.Source = new BitmapImage(new Uri(eyeImg));
+                            eye.Source = EyeBitmapImages[0];
                         });
 
                         nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(eyeBlinkMin, eyeBlinkMax));
@@ -148,11 +176,11 @@ namespace DesktopMe {
                         // Check if currently speaking, only blink if not in dialog
 
                         this.Dispatcher.Invoke(() => {
-                            main.Source = new BitmapImage(new Uri(mainImg));
+                            main.Source = MainBitmapImages[1];
                         });
                         Task.Delay(500).Wait();
                         this.Dispatcher.Invoke(() => {
-                            main.Source = new BitmapImage(new Uri(main_Img));
+                            main.Source = MainBitmapImages[0];
                         });
 
                         nextBlink = DateTime.Now + TimeSpan.FromSeconds(0.5);
@@ -168,17 +196,16 @@ namespace DesktopMe {
                 while (true) {
                     if (DateTime.Now >= nextBlink) {
                         // Check if currently speaking, only blink if not in dialog
-                        DirectoryInfo directoryInfo = new DirectoryInfo(animFolder);
-                        for (int i = 1; i <= directoryInfo.GetFiles().Length; i++) {
+                        for (int i = 1; i <= AnimBitmapImages.Count; i++) {
                             this.Dispatcher.Invoke(() => {
-                                if(File.Exists(animFolder + "/" + i + ".png"))
-                                    tail.Source = new BitmapImage(new Uri(animFolder + "/" + i + ".png"));
+                                    tail.Source = AnimBitmapImages[i];
                             });
                             Task.Delay(interval).Wait();
                         }
 
                         nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(rare, rare + 20));
                     }
+                    CollectAllGarbage();
                 }
             }); // Animation
             Task.Run(() => {
@@ -191,11 +218,11 @@ namespace DesktopMe {
                         // Check if currently speaking, only blink if not in dialog
                         if (isPlayed) {
                             this.Dispatcher.Invoke(() => {
-                                music.Source = new BitmapImage(new Uri(musicImg1));
+                                music.Source = MusicBitmapImages[0];
                             });
                             Task.Delay(1000).Wait();
                             this.Dispatcher.Invoke(() => {
-                                music.Source = new BitmapImage(new Uri(musicImg2));
+                                music.Source = MusicBitmapImages[1];
                             });
                         }
                         else {
@@ -235,6 +262,8 @@ namespace DesktopMe {
                     Task.Delay(250).Wait();
                 }
             }); // Detect Music
+
+            CollectAllGarbage();
         }
         void changeChar() {
             mainImg = mainFolder + "/body.png";
@@ -258,6 +287,26 @@ namespace DesktopMe {
             else
                 tail.Source = null;
 
+            MainBitmapImages.Add(new BitmapImage(new Uri(mainImg)));
+            MainBitmapImages.Add(new BitmapImage(new Uri(main_Img)));
+
+            EyeBitmapImages.Add(new BitmapImage(new Uri(eyeImg)));
+            EyeBitmapImages.Add(new BitmapImage(new Uri(eyeImg1)));
+
+            MouthBitmapImages.Add(new BitmapImage(new Uri(mouthImg)));
+            MouthBitmapImages.Add(new BitmapImage(new Uri(mouthImg1)));
+
+            MusicBitmapImages.Add(new BitmapImage(new Uri(musicImg1)));
+            MusicBitmapImages.Add(new BitmapImage(new Uri(musicImg2)));
+
+            DirectoryInfo directoryInfo = new DirectoryInfo(animFolder);
+            for (int i = 1; i <= directoryInfo.GetFiles().Length; i++) {
+                this.Dispatcher.Invoke(() => {
+                    if (File.Exists(directoryInfo.FullName + "/" + i + ".png"))
+                        AnimBitmapImages.Add(new BitmapImage(new Uri(directoryInfo.FullName + "/" + i + ".png")));
+                });
+            }
+            CollectAllGarbage();
         }
         private void ShowPeakMono(object sender, NAudio.Wave.WaveInEventArgs args) {
             float maxValue = 32767;
@@ -329,6 +378,14 @@ namespace DesktopMe {
                 readData();
             }
         }
+
+        private void MenuItem_Checked(object sender, RoutedEventArgs e) {
+            pinned = true;
+        }
+
+        private void MenuItem_Unchecked(object sender, RoutedEventArgs e) {
+            pinned = false;
+        }
         private void quitMenu_Click(object sender, RoutedEventArgs e) {
             this.Close();
         }
@@ -338,20 +395,138 @@ namespace DesktopMe {
 
             iniFile.Write("Pinned", pinned.ToString(), "Other");
 
-        }
+            foreach(Accessorie accessorie in accessories) {
 
-        private void MenuItem_Checked(object sender, RoutedEventArgs e) {
-            pinned = true;
-        }
 
-        private void MenuItem_Unchecked(object sender, RoutedEventArgs e) {
-            pinned = false;
+                IniFile acsFile = new IniFile(mainFolder + "/acs/" + accessorie.Name + ".ini");
+
+                acsFile.Write("Name", accessorie.Name, "Main");
+                acsFile.Write("Path", accessorie.Path, "Main");
+                acsFile.Write("X", accessorie.Window.Left.ToString(), "Main");
+                acsFile.Write("Y", accessorie.Window.Top.ToString(), "Main");
+                acsFile.Write("Size", accessorie.Size.ToString(), "Main");
+
+            }
+
         }
 
         private void Window_Deactivated(object sender, EventArgs e) {
-            Window window = sender as Window;
+            /*Window window = sender as Window;
             window.Topmost = true;
-            window.Activate();
+            window.Activate();*/
+        }
+
+        private void Grid_Drop(object sender, DragEventArgs e) {
+
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) {
+                // Note that you can have more than one file.
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                // Assuming you have one file that you care about, pass it off to whatever
+                // handling code you have defined.
+                Debug.WriteLine(files[0]);
+                DirectoryInfo directoryInfo = new DirectoryInfo(mainFolder + "/acs/");
+                if (!directoryInfo.Exists) {
+                    directoryInfo.Create();
+                }
+                bool isFolder = File.GetAttributes(files[0]).HasFlag(FileAttributes.Directory);
+                if (isFolder && !Directory.Exists(mainFolder + "/acs/" + new DirectoryInfo(files[0]).Name)) {
+                    Debug.WriteLine("dsadsa");
+                    // Get information about the source directory
+                    var dir = new DirectoryInfo(files[0]);
+
+                    // Cache directories before we start copying
+                    DirectoryInfo[] dirs = dir.GetDirectories();
+
+                    // Create the destination directory
+                    Directory.CreateDirectory(mainFolder + "/acs/" + dir.Name);
+
+                    // Get the files in the source directory and copy to the destination directory
+                    foreach (FileInfo file in dir.GetFiles()) {
+                        string targetFilePath = System.IO.Path.Combine(mainFolder + "/acs/" + dir.Name, file.Name);
+                        file.CopyTo(targetFilePath, true);
+                    }
+
+                    Accessorie accessorie = new Accessorie();
+                    accessorie.Name = dir.Name;
+                    accessorie.Path = mainFolder + "/acs/" + dir.Name;
+                    accessorie.Position = PointToScreen(e.GetPosition(this));
+                    accessorie.Size = 100;
+
+                    accessorie.Window = new AccessorieWindow(accessorie, this);
+                    accessorie.Window.Owner = this;
+                    accessorie.Window.Show();
+                    accessories.Add(accessorie);
+                }
+                /*
+                FileInfo fileInfo = new FileInfo(files[0]);
+                if(fileInfo.Extension != ".png") 
+                    return;
+                fileInfo.CopyTo(mainFolder + "/acs/" + System.IO.Path.GetFileNameWithoutExtension(fileInfo.Name) + "/" + fileInfo.Name, true);
+
+                Accessorie accessorie = new Accessorie();
+                accessorie.Name = System.IO.Path.GetFileNameWithoutExtension(fileInfo.Name);
+                accessorie.Path = mainFolder + "/acs/" + System.IO.Path.GetFileNameWithoutExtension(fileInfo.Name);
+                accessorie.Position = PointToScreen(e.GetPosition(this));
+                accessorie.Size = 100;
+
+                accessorie.Window = new AccessorieWindow(accessorie, this);
+                accessorie.Window.Owner = this;
+                accessorie.Window.Show();
+                accessories.Add(accessorie);*/
+
+            }
+
+        }
+        public void deleteItem(Accessorie item) {
+            accessories.Remove(item);
+            System.GC.Collect();
+            System.GC.WaitForPendingFinalizers();
+            Directory.Delete(item.Path, true);
+            File.Delete(mainFolder + "/acs/" + item.Name + ".ini");
+        }
+        void drawAcs() {
+
+            DirectoryInfo directoryInfo = new DirectoryInfo(mainFolder + "/acs/");
+            if (!directoryInfo.Exists) {
+                directoryInfo.Create();
+            }
+            foreach (FileInfo fileInfo in directoryInfo.GetFiles("*.ini")) {
+
+                iniFile = new IniFile(fileInfo.FullName);
+
+                Accessorie accessorie = new Accessorie();
+                accessorie.Name = iniFile.ReadString("Name", "Main");
+                accessorie.Path = iniFile.ReadString("Path", "Main");
+                accessorie.Position = new Point(iniFile.ReadInt("X", "Main"), iniFile.ReadInt("Y", "Main"));
+                accessorie.Size = iniFile.ReadInt("Size", "Main");
+
+                Debug.WriteLine(accessorie.Name);
+
+                accessorie.Window = new AccessorieWindow(accessorie, this);
+                accessorie.Window.Height = accessorie.Size;
+                accessorie.Window.Width = accessorie.Size;
+                accessorie.Window.Owner = this;
+                accessorie.Window.Left = accessorie.Position.X;
+                accessorie.Window.Top = accessorie.Position.Y;
+                accessorie.Window.Show();
+                accessories.Add(accessorie);
+            }
+
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e) {
+            drawAcs();
+        }
+        private void CollectAllGarbage() {/*
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+
+            SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, -1, -1);
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect();*/
         }
     }
 }

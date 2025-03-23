@@ -1,0 +1,24 @@
+﻿<Window x:Class="DesktopMe.AccessorieWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DesktopMe"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        MouseDown="Window_MouseDown"
+        Deactivated="Window_Deactivated"
+        PreviewMouseWheel="Window_PreviewMouseWheel"
+        Title="AccessorieWindow" ShowInTaskbar="False" Background="Transparent" Topmost="True" Height="300" Width="300" AllowsTransparency="True">
+    <Grid>
+        <Image IsEnabled="False" IsHitTestVisible="False"  x:Name="main"/>
+    </Grid>
+    <Window.ContextMenu>
+        <ContextMenu>
+            <MenuItem x:Name="pin" Header="Закрепить" 
+                  IsCheckable="True" Checked="MenuItem_Checked" Unchecked="MenuItem_Unchecked"/>
+            <Separator/>
+            <MenuItem x:Name="quitMenu" Header="Закрыть" Click="quitMenu_Click"/>
+        </ContextMenu>
+    </Window.ContextMenu>
+</Window>
