@@ -9,6 +9,7 @@
         MouseDown="Window_MouseDown"
         ResizeMode="NoResize"
         Closing="Window_Closing"
+        Deactivated="Window_Deactivated"
         Title="MainWindow" ShowInTaskbar="False" Background="Transparent" Topmost="True" Height="300" Width="300" AllowsTransparency="True" WindowStyle="None">
     <Grid>
         <Image IsEnabled="False" IsHitTestVisible="False"  x:Name="main"/>
@@ -33,9 +34,10 @@
     -->
     <Window.ContextMenu>
         <ContextMenu>
+            <MenuItem x:Name="pin" Header="Закрепить" 
+                  IsCheckable="True" Checked="MenuItem_Checked" Unchecked="MenuItem_Unchecked"/>
             <MenuItem x:Name="settingsMenu" Header="Настройки" Click="settingsMenu_Click"/>
             <MenuItem x:Name="charOption" Header="Персонаж">
-                
             </MenuItem>
             <Separator/>
             <MenuItem x:Name="quitMenu" Header="Выйти" Click="quitMenu_Click"/>

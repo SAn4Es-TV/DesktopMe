@@ -47,6 +47,8 @@ namespace DesktopMe {
         public int eyeBlinkMin = 5;
         public int eyeBlinkMax = 15;
 
+        bool pinned = false;
+
         void readData() {
 
             if (File.Exists("file_name.ini")) {
@@ -64,6 +66,14 @@ namespace DesktopMe {
                 eyeBlinkMin = iniFile.ReadInt("BlinkMin", "Other");
                 eyeBlinkMax = iniFile.ReadInt("BlinkMax", "Other");
                 eyeClosedTime = iniFile.ReadInt("BlinkTime", "Other");
+
+                try {
+                    pinned = bool.Parse(iniFile.ReadString("Pinned", "Other"));
+                }
+                catch(Exception e) {
+
+                }
+                
             }
             else {
                 iniFile = new IniFile("file_name.ini");
@@ -73,6 +83,7 @@ namespace DesktopMe {
         public MainWindow() {
             InitializeComponent();
             readData();
+            pin.IsChecked = pinned;
             DirectoryInfo directoryInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "/Characters/");
             foreach (DirectoryInfo fi in directoryInfo.GetDirectories()) {
                 MenuItem menuItem = new MenuItem();
@@ -80,6 +91,7 @@ namespace DesktopMe {
                 menuItem.Click += (sender, e) => {
                     iniFile.Write("Character", fi.Name, "Other");
                     character = fi.Name;
+                    mainFolder = AppDomain.CurrentDomain.BaseDirectory + "/Characters/" + character;
                     changeChar();
                     Debug.WriteLine(mainFolder);
                 };
@@ -276,8 +288,8 @@ namespace DesktopMe {
         private void Window_MouseDown(object sender, MouseButtonEventArgs e) {
 
             if (e.ChangedButton == MouseButton.Left) {
-
-                this.DragMove();
+                if(!pinned)
+                    this.DragMove();
                 /*anchorPoint = PointToScreen(e.GetPosition(this));
                 inDrag = true;
                 CaptureMouse();
@@ -324,6 +336,22 @@ namespace DesktopMe {
             iniFile.Write("X", Left.ToString(), "Position");
             iniFile.Write("Y", Top.ToString(), "Position");
 
+            iniFile.Write("Pinned", pinned.ToString(), "Other");
+
+        }
+
+        private void MenuItem_Checked(object sender, RoutedEventArgs e) {
+            pinned = true;
+        }
+
+        private void MenuItem_Unchecked(object sender, RoutedEventArgs e) {
+            pinned = false;
+        }
+
+        private void Window_Deactivated(object sender, EventArgs e) {
+            Window window = sender as Window;
+            window.Topmost = true;
+            window.Activate();
         }
     }
 }
