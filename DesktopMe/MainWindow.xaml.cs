@@ -216,7 +216,6 @@ namespace DesktopMe {
 
                         nextBlink = DateTime.Now + TimeSpan.FromSeconds(random.Next(rare, rare + 20));
                     }
-                    CollectAllGarbage();
                 }
             }); // Animation
             Task.Run(() => {
@@ -271,6 +270,7 @@ namespace DesktopMe {
 
                     }
                     Task.Delay(250).Wait();
+                    CollectAllGarbage();
                 }
             }); // Detect Music
 
@@ -530,14 +530,14 @@ namespace DesktopMe {
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             drawAcs();
         }
-        private void CollectAllGarbage() {/*
+        private void CollectAllGarbage() {
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
 
             SetProcessWorkingSetSize(Process.GetCurrentProcess().Handle, -1, -1);
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
             GC.WaitForPendingFinalizers();
-            GC.Collect();*/
+            GC.Collect();
         }
 
         private void Window_SourceInitialized(object sender, EventArgs e) {
