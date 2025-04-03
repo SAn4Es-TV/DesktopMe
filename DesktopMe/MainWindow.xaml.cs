@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
@@ -25,7 +27,7 @@ namespace DesktopMe {
     /// 
     public class Accessorie {
         public string Name { get; set; }
-        public int Size{ get; set; }
+        public int Size { get; set; }
         public Point Position { get; set; }
         public string Path { get; set; }
 
@@ -33,6 +35,14 @@ namespace DesktopMe {
     }
 
     public partial class MainWindow : Window {
+        [DllImport("user32.dll")]
+        static extern IntPtr GetDesktopWindow();
+
+
+        const int GWL_EXSTYLE = -20;
+        const int WS_EX_TOOLWINDOW = 0x00000080;
+        const int WS_EX_APPWINDOW = 0x00040000;
+
         #region Сбор мусора
         [DllImport("kernel32.dll")]
         static extern bool SetProcessWorkingSetSize(IntPtr hProcess, int dwMinimumWorkingSetSize, int dwMaximumWorkingSetSize);
@@ -98,10 +108,10 @@ namespace DesktopMe {
                 try {
                     pinned = bool.Parse(iniFile.ReadString("Pinned", "Other"));
                 }
-                catch(Exception e) {
+                catch (Exception e) {
 
                 }
-                
+
             }
             else {
                 iniFile = new IniFile("file_name.ini");
@@ -110,6 +120,7 @@ namespace DesktopMe {
         }
         public MainWindow() {
             InitializeComponent();
+
             readData();
             pin.IsChecked = pinned;
             DirectoryInfo directoryInfo = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory + "/Characters/");
@@ -135,7 +146,7 @@ namespace DesktopMe {
                 character = list[new Random().Next(list.Count)].Name;
                 changeChar();
             }
-            
+
 
             var waveIn = new NAudio.Wave.WaveInEvent {
                 DeviceNumber = 0, // customize this to select your microphone device
@@ -196,9 +207,9 @@ namespace DesktopMe {
                 while (true) {
                     if (DateTime.Now >= nextBlink) {
                         // Check if currently speaking, only blink if not in dialog
-                        for (int i = 1; i <= AnimBitmapImages.Count; i++) {
+                        for (int i = 0; i < AnimBitmapImages.Count; i++) {
                             this.Dispatcher.Invoke(() => {
-                                    tail.Source = AnimBitmapImages[i];
+                                tail.Source = AnimBitmapImages[i];
                             });
                             Task.Delay(interval).Wait();
                         }
@@ -337,7 +348,7 @@ namespace DesktopMe {
         private void Window_MouseDown(object sender, MouseButtonEventArgs e) {
 
             if (e.ChangedButton == MouseButton.Left) {
-                if(!pinned)
+                if (!pinned)
                     this.DragMove();
                 /*anchorPoint = PointToScreen(e.GetPosition(this));
                 inDrag = true;
@@ -395,7 +406,7 @@ namespace DesktopMe {
 
             iniFile.Write("Pinned", pinned.ToString(), "Other");
 
-            foreach(Accessorie accessorie in accessories) {
+            foreach (Accessorie accessorie in accessories) {
 
 
                 IniFile acsFile = new IniFile(mainFolder + "/acs/" + accessorie.Name + ".ini");
@@ -527,6 +538,11 @@ namespace DesktopMe {
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
             GC.WaitForPendingFinalizers();
             GC.Collect();*/
+        }
+
+        private void Window_SourceInitialized(object sender, EventArgs e) {
+            var win = new WindowInteropHelper(this);
+            win.Owner = GetDesktopWindow();
         }
     }
 }

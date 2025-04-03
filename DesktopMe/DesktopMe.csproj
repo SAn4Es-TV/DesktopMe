@@ -7,7 +7,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <ApplicationIcon>desktopmeIkon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="desktopmeIkon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.5.1" />

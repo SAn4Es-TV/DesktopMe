@@ -12,6 +12,7 @@
         Deactivated="Window_Deactivated"
         AllowDrop="True" Drop="Grid_Drop"
         Loaded="Window_Loaded"
+        SourceInitialized="Window_SourceInitialized"
         Title="MainWindow" ShowInTaskbar="False" Background="Transparent" Topmost="True" Height="300" Width="300" AllowsTransparency="True" WindowStyle="None">
     <Grid>
         <Image IsEnabled="False" IsHitTestVisible="False"  x:Name="main"/>
